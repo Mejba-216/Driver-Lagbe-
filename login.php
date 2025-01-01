@@ -1,6 +1,6 @@
 <?php
-// Include the database connection
 include 'connect.php';
+session_start();
 
 // Initialize variables for messages
 $error = '';
@@ -29,18 +29,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Verify the password
             if (password_verify($password, $user['password'])) {
                 // Start a session and store user data
-                session_start();
+                
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['user_type'] = $user['user_type'];
                 $_SESSION['name'] = $user['name'];
+                $_SESSION['email'] = $user['email'];
 
                 // Redirect based on user type
                 if ($user['user_type'] === 'Driver') {
                     header("Location: driver_dashboard.php");
+                    
                 } elseif ($user['user_type'] === 'Car Owner') {
                     header("Location: car_owner_dashboard.php");
+                    exit;
                 }
-                exit;
             } else {
                 $error = "Incorrect password!";
             }
@@ -53,7 +55,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 $conn->close();
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
