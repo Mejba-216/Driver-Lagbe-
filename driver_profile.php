@@ -3,8 +3,18 @@
 include 'connect.php';
 session_start();
 
+// Check if the user is logged in and is a Driver
+if (!isset($_SESSION['email']) || $_SESSION['user_type'] !== 'Driver') {
+    header('Location: login.php');
+    exit;
+}
 
-// $driver_email = $_SESSION['email'];
+// Fetch the logged-in user's email
+$driver_email = $_SESSION['email'] ?? null;
+
+if (!$driver_email) {
+    die("Error: Email is not set in the session. Please log in again.");
+}
 
 // Fetch the existing profile if it exists
 $query = "SELECT * FROM Driver WHERE Email = ?";
@@ -18,7 +28,6 @@ $driver = $result->fetch_assoc();
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = $_POST['name'];
     $phone = $_POST['phone'];
-    $email = $driver_email['email']; // Email is fetched from session
     $area = $_POST['area'];
     $city = $_POST['city'];
     $experience = $_POST['experience'];
@@ -26,15 +35,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($driver) {
         // Update the profile
-        $update_query = "UPDATE Driver SET Name = ?, Phone = ?, Area = ?, City = ?, Experience = ?, LicenseNo = ?, Email = ?";
+        $update_query = "UPDATE Driver SET Name = ?, Phone = ?, Area = ?, City = ?, Experience = ?, LicenseNo = ? WHERE Email = ?";
         $stmt = $conn->prepare($update_query);
-        $stmt->bind_param("ssssiss", $name, $phone, $area, $city, $experience, $license_no, $email);
+        $stmt->bind_param("ssssiss", $name, $phone, $area, $city, $experience, $license_no, $driver_email);
         $stmt->execute();
     } else {
         // Insert a new profile
         $insert_query = "INSERT INTO Driver (Name, Phone, Email, Area, City, Experience, LicenseNo) VALUES (?, ?, ?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($insert_query);
-        $stmt->bind_param("ssssisi", $name, $phone, $email, $area, $city, $experience, $license_no);
+        $stmt->bind_param("ssssisi", $name, $phone, $driver_email, $area, $city, $experience, $license_no);
         $stmt->execute();
     }
 
@@ -68,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <div class="form-group">
                 <label for="email">Email</label>
-                <input type="email" id="email" name="email" value="<?= htmlspecialchars($driver_email['Email'] ?? '') ?>" required>
+                <input type="email" id="email" value="<?= htmlspecialchars($driver_email) ?>" disabled>
             </div>
             <div class="form-group">
                 <label for="area">Area</label>
