@@ -12,7 +12,7 @@ if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'Driver') {
 include 'connect.php';
 
 // Fetch the logged-in user's data from the database
-// $driver_email = $_SESSION['email'];
+$driver_email = $_SESSION['email'];
 $query = "SELECT * FROM users WHERE Email = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("s", $driver_email);
